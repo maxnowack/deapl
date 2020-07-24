@@ -1,0 +1,43 @@
+{
+  "name": "deapl",
+  "version": "1.0.0",
+  "description": "Automatic translations with deepl.com and puppeteer",
+  "main": "dist/index.js",
+  "scripts": {
+    "prepare": "npm run build",
+    "test": "ava",
+    "lint": "eslint --quiet --ext .ts --ext .tsx .",
+    "build": "rm -r ./dist; tsc"
+  },
+  "keywords": [],
+  "author": "Max Nowack <max.nowack@gmail.com>",
+  "license": "MIT",
+  "ava": {
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "puppeteer": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/puppeteer": "^3.0.1",
+    "@typescript-eslint/eslint-plugin": "^3.7.0",
+    "@typescript-eslint/parser": "^3.7.0",
+    "ava": "^3.10.1",
+    "eslint": "^7.5.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-import-resolver-typescript": "^2.0.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-prefer-object-spread": "^1.2.1",
+    "eslint-plugin-sort-class-members": "^1.7.0",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7"
+  }
+}

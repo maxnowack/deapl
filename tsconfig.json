@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "declaration": true,
+    "rootDirs": ["./src"],
+    "outDir": "./dist",
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "strict": true,
+    "downlevelIteration": true,
+    "lib": ["es2017", "dom"],
+    "baseUrl": ".",
+    "paths": {
+      "*": ["./types/*"],
+    },
+    "noErrorTruncation": true,
+    "esModuleInterop": true,
+    "noImplicitAny": false,
+  },
+  "paths": {
+    "/*": [
+      "./*"
+    ]
+  },
+  "exclude": [
+    "dist",
+    "node_modules"
+  ],
+  "include": [
+    "**/*.ts"
+  ]
+}
