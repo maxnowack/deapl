@@ -17,6 +17,20 @@ test('translate with source language', async (t) => {
   t.is(text, 'Hello')
 })
 
+test('translate with formality', async (t) => {
+  t.is(await translate('You lie', {
+    sourceLanguage: 'en',
+    targetLanguage: 'de',
+    formality: 'formal',
+  }), 'Sie lügen')
+
+  t.is(await translate('You lie', {
+    sourceLanguage: 'en',
+    targetLanguage: 'de',
+    formality: 'informal',
+  }), 'Du lügst')
+})
+
 test.after(async () => {
   await kill()
 })
