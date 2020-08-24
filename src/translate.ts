@@ -1,10 +1,12 @@
 import puppeteer, { Browser } from 'puppeteer'
 
-type Language = 'en' | 'de' | 'fr' | 'es' | 'pt' | 'it' | 'nl' | 'pl' | 'ru'
+type SourceLanguage = 'en' | 'de' | 'fr' | 'es' | 'pt' | 'it' | 'nl' | 'pl' | 'ru'
+type TargetLanguage = 'en-US' | 'en-GB' | 'de-DE' | 'fr-FR' | 'es-ES' | 'pt-PT'
+  | 'pt-BR' | 'it-IT' | 'nl-NL' | 'pl-PL' | 'ru-RU' | 'ja-JA' | 'zh-ZH'
 
 export interface Options {
-  sourceLanguage?: Language,
-  targetLanguage: Language,
+  sourceLanguage?: SourceLanguage,
+  targetLanguage: TargetLanguage,
   formality?: 'formal' | 'informal',
   defaultDelay?: number,
 }
@@ -43,17 +45,17 @@ export default async function translate(text: string, options: Options) {
     await sleepMs(1000)
   }
   await page.goto('https://www.deepl.com/translator')
-  await page.waitForSelector(`.lmt__side_container--target button[dl-lang=${options.targetLanguage.toUpperCase()}]`)
+  await page.waitForSelector('.lmt__language_select--target .lmt__language_select__active')
   if (options.sourceLanguage) {
     await sleepMs(defaultDelay)
     await page.click('.lmt__language_select--source .lmt__language_select__active')
     await sleepMs(defaultDelay)
-    await page.click(`.lmt__language_select--source button[dl-lang=${options.sourceLanguage.toUpperCase()}]`)
+    await page.click(`.lmt__language_select--source button[dl-test=translator-lang-option-${options.sourceLanguage}]`)
   }
   await sleepMs(defaultDelay)
   await page.click('.lmt__language_select--target .lmt__language_select__active')
   await sleepMs(defaultDelay)
-  await page.click(`.lmt__language_select--target button[dl-lang=${options.targetLanguage.toUpperCase()}]`)
+  await page.click(`.lmt__language_select--target button[dl-test=translator-lang-option-${options.targetLanguage}]`)
   await sleepMs(defaultDelay)
 
   await page.click('.lmt__source_textarea')

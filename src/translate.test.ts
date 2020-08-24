@@ -4,7 +4,7 @@ import translate, { kill } from './translate'
 
 test('translate with auto language', async (t) => {
   const text = await translate('This is a test', {
-    targetLanguage: 'de',
+    targetLanguage: 'de-DE',
   })
   t.is(text, 'Dies ist ein Test')
 })
@@ -12,7 +12,7 @@ test('translate with auto language', async (t) => {
 test('translate with source language', async (t) => {
   const text = await translate('Hallo', {
     sourceLanguage: 'de',
-    targetLanguage: 'en',
+    targetLanguage: 'en-US',
   })
   t.is(text, 'Hello')
 })
@@ -20,13 +20,13 @@ test('translate with source language', async (t) => {
 test('translate with formality', async (t) => {
   t.is(await translate('You lie', {
     sourceLanguage: 'en',
-    targetLanguage: 'de',
+    targetLanguage: 'de-DE',
     formality: 'formal',
   }), 'Sie lügen')
 
   t.is(await translate('You lie', {
     sourceLanguage: 'en',
-    targetLanguage: 'de',
+    targetLanguage: 'de-DE',
     formality: 'informal',
   }), 'Du lügst')
 })
