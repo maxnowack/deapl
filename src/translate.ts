@@ -77,7 +77,15 @@ export default async function translate(text: string, options: Options) {
       throw new Error('Cannot switch formality')
     }
 
-    await page.click('.lmt__formalitySwitch__toggler')
+    await page.evaluate(() => {
+      const node = document.querySelector('.lmt__formalitySwitch')
+      if (!node) return
+      node.classList.add('dl_visible')
+      node.classList.add('dl_visible_2')
+      node.classList.add('lmt__formalitySwitch--is-open_0')
+      node.classList.add('lmt__formalitySwitch--is-open')
+    })
+
     await sleepMs(defaultDelay)
     if (options.formality === 'formal') {
       await page.click('.lmt__formalitySwitch__menu_item:nth-child(1)')
