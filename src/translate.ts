@@ -1,4 +1,5 @@
-import puppeteer, { Browser } from 'puppeteer'
+/* eslint-disable no-await-in-loop */
+import puppeteer, { Browser, Page } from 'puppeteer'
 
 type SourceLanguage = 'en' | 'de' | 'fr' | 'es' | 'pt' | 'it' | 'nl' | 'pl' | 'ru'
 type TargetLanguage = 'en-US' | 'en-GB' | 'de-DE' | 'fr-FR' | 'es-ES' | 'pt-PT'
@@ -18,8 +19,8 @@ const getBrowser = () => {
       // headless: false,
       // args: ['--no-sandbox', '--disable-setuid-sandbox'],
       defaultViewport: {
-        width: 700,
-        height: 480,
+        width: 800,
+        height: 600,
       },
     })
   }
@@ -33,6 +34,8 @@ export async function kill() {
 }
 
 const sleepMs = (ms: number) => new Promise(r => setTimeout(r, ms))
+const hasSelector = (page: Page, selector: string) => page.evaluate(s =>
+  !!document.querySelector(s), [selector])
 
 export default async function translate(text: string, options: Options) {
   const browser = await getBrowser()
@@ -46,6 +49,12 @@ export default async function translate(text: string, options: Options) {
   }
   await page.goto('https://www.deepl.com/translator')
   await page.waitForSelector('.lmt__language_select--target .lmt__language_select__active')
+
+  while (await hasSelector(page, '.dl_cookieBanner--buttonSelected')) {
+    await page.click('.dl_cookieBanner--buttonSelected')
+    await sleepMs(1000)
+  }
+
   if (options.sourceLanguage) {
     await sleepMs(defaultDelay)
     await page.click('.lmt__language_select--source .lmt__language_select__active')
@@ -64,9 +73,9 @@ export default async function translate(text: string, options: Options) {
   await waitForTranslation()
 
   if (options.formality) {
-    const hasSelector = await page.evaluate(() =>
-      !!document.querySelector('.lmt__formalitySwitch__toggler'))
-    if (!hasSelector) throw new Error('Cannot switch formality')
+    if (!await hasSelector(page, '.lmt__formalitySwitch__toggler')) {
+      throw new Error('Cannot switch formality')
+    }
 
     await page.click('.lmt__formalitySwitch__toggler')
     await sleepMs(defaultDelay)
