@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import puppeteer, { Browser, Page } from 'puppeteer'
+import PQueue from 'p-queue'
 
 type SourceLanguage = 'en' | 'de' | 'fr' | 'es' | 'pt' | 'it' | 'nl' | 'pl' | 'ru'
 type TargetLanguage = 'en-US' | 'en-GB' | 'de-DE' | 'fr-FR' | 'es-ES' | 'pt-PT'
@@ -37,10 +38,10 @@ const sleepMs = (ms: number) => new Promise(r => setTimeout(r, ms))
 const hasSelector = (page: Page, selector: string) => page.evaluate(s =>
   !!document.querySelector(s), [selector])
 
-export default async function translate(text: string, options: Options) {
+async function translatePhrase(text: string, options: Options) {
   const browser = await getBrowser()
   const page = await browser.newPage()
-  const defaultDelay = options.defaultDelay || 50
+  const defaultDelay = options.defaultDelay || 150
 
   const waitForTranslation = async () => {
     await sleepMs(1000)
@@ -59,12 +60,12 @@ export default async function translate(text: string, options: Options) {
     await sleepMs(defaultDelay)
     await page.click('.lmt__language_select--source .lmt__language_select__active')
     await sleepMs(defaultDelay)
-    await page.click(`.lmt__language_select--source button[dl-test=translator-lang-option-${options.sourceLanguage}]`)
+    await page.click(`[dl-test=translator-source-lang-list] [dl-test="translator-lang-option-${options.sourceLanguage}"]`)
   }
   await sleepMs(defaultDelay)
   await page.click('.lmt__language_select--target .lmt__language_select__active')
   await sleepMs(defaultDelay)
-  await page.click(`.lmt__language_select--target button[dl-test=translator-lang-option-${options.targetLanguage}]`)
+  await page.click(`[dl-test=translator-target-lang-list] [dl-test="translator-lang-option-${options.targetLanguage}"]`)
   await sleepMs(defaultDelay)
 
   await page.click('.lmt__source_textarea')
@@ -103,4 +104,9 @@ export default async function translate(text: string, options: Options) {
   })
   await page.close()
   return result
+}
+
+const pQueue = new PQueue({ concurrency: 1 })
+export default async function translate(text: string, options: Options) {
+  return pQueue.add(() => translatePhrase(text, options))
 }
