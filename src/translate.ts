@@ -60,12 +60,12 @@ async function translatePhrase(text: string, options: Options) {
     await sleepMs(defaultDelay)
     await page.click('.lmt__language_select--source .lmt__language_select__active')
     await sleepMs(defaultDelay)
-    await page.click(`[dl-test=translator-source-lang-list] [dl-test="translator-lang-option-${options.sourceLanguage}"]`)
+    await page.click(`.lmt__language_select__menu_source [dl-test="translator-lang-option-${options.sourceLanguage}"]`)
   }
   await sleepMs(defaultDelay)
   await page.click('.lmt__language_select--target .lmt__language_select__active')
   await sleepMs(defaultDelay)
-  await page.click(`[dl-test=translator-target-lang-list] [dl-test="translator-lang-option-${options.targetLanguage}"]`)
+  await page.click(`.lmt__language_select__menu_target [dl-test="translator-lang-option-${options.targetLanguage}"]`)
   await sleepMs(defaultDelay)
 
   await page.click('.lmt__source_textarea')
@@ -89,9 +89,9 @@ async function translatePhrase(text: string, options: Options) {
 
     await sleepMs(defaultDelay)
     if (options.formality === 'formal') {
-      await page.click('.lmt__formalitySwitch__menu_item:nth-child(1)')
+      await page.click('.lmt__formalitySwitch__menu_item_container:nth-child(1) .lmt__formalitySwitch__menu_item')
     } else if (options.formality === 'informal') {
-      await page.click('.lmt__formalitySwitch__menu_item:nth-child(2)')
+      await page.click('.lmt__formalitySwitch__menu_item_container:nth-child(2) .lmt__formalitySwitch__menu_item')
     }
 
     await waitForTranslation()
