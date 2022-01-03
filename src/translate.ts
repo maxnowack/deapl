@@ -89,8 +89,12 @@ async function translatePhrase(text: string, options: Options) {
 
     await sleepMs(defaultDelay)
     if (options.formality === 'formal') {
+      await page.click('.lmt__formalitySwitch__toggler')
+      await page.waitForSelector('.lmt__formalitySwitch__menu')
       await page.click('.lmt__formalitySwitch__menu_item_container:nth-child(1) .lmt__formalitySwitch__menu_item')
     } else if (options.formality === 'informal') {
+      await page.click('.lmt__formalitySwitch__toggler')
+      await page.waitForSelector('.lmt__formalitySwitch__menu')
       await page.click('.lmt__formalitySwitch__menu_item_container:nth-child(2) .lmt__formalitySwitch__menu_item')
     }
 
