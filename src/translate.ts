@@ -110,7 +110,14 @@ async function translatePhrase(text: string, options: Options) {
   return result
 }
 
-const pQueue = new PQueue({ concurrency: 1 })
+const pQueue = new PQueue({
+  concurrency: process.env.DEAPL_CONCURRENCY ? parseInt(process.env.DEAPL_CONCURRENCY, 10) : 1,
+})
+
+export function setConcurrency(concurrency: number) {
+  pQueue.concurrency = concurrency
+}
+
 export default async function translate(text: string, options: Options) {
   return pQueue.add(() => translatePhrase(text, options))
 }
