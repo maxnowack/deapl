@@ -2,9 +2,13 @@
 import puppeteer, { Browser, Page } from 'puppeteer'
 import PQueue from 'p-queue'
 
-type SourceLanguage = 'en' | 'de' | 'fr' | 'es' | 'pt' | 'it' | 'nl' | 'pl' | 'ru'
-type TargetLanguage = 'en-US' | 'en-GB' | 'de-DE' | 'fr-FR' | 'es-ES' | 'pt-PT'
-  | 'pt-BR' | 'it-IT' | 'nl-NL' | 'pl-PL' | 'ru-RU' | 'ja-JA' | 'zh-ZH'
+type SourceLanguage = 'bg' | 'zh' | 'cs' | 'da' | 'nl' | 'en' | 'et' | 'fi'
+  | 'fr' | 'de' | 'el' | 'hu' | 'it' | 'ja' | 'lv' | 'lt' | 'pl' | 'pt'
+  | 'ro' | 'ru' | 'sk' | 'sl' | 'es' | 'sv'
+type TargetLanguage = 'vg-BG' | 'zh-ZH' | 'cs-CS' | 'da-DA' | 'nl-NL' | 'en-US'
+  | 'en-GB' | 'et-ET' | 'fi-FI' | 'fr-FR' | 'de-DE' | 'el-EL' | 'hu-HU' | 'it-IT'
+  | 'ja-JA' | 'lv-LV' | 'lt-LT' | 'pl-PL' | 'pt-PT' | 'pt-BR' | 'ro-RO' | 'ru-RU'
+  | 'sk-SK' | 'sl-SL' | 'es-ES' | 'sv-SV'
 
 export interface Options {
   sourceLanguage?: SourceLanguage,
