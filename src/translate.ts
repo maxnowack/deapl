@@ -5,10 +5,35 @@ import PQueue from 'p-queue'
 type SourceLanguage = 'bg' | 'zh' | 'cs' | 'da' | 'nl' | 'en' | 'et' | 'fi'
   | 'fr' | 'de' | 'el' | 'hu' | 'it' | 'ja' | 'lv' | 'lt' | 'pl' | 'pt'
   | 'ro' | 'ru' | 'sk' | 'sl' | 'es' | 'sv'
-type TargetLanguage = 'bg-BG' | 'zh-ZH' | 'cs-CS' | 'da-DA' | 'nl-NL' | 'en-US'
-  | 'en-GB' | 'et-ET' | 'fi-FI' | 'fr-FR' | 'de-DE' | 'el-EL' | 'hu-HU' | 'it-IT'
-  | 'ja-JA' | 'lv-LV' | 'lt-LT' | 'pl-PL' | 'pt-PT' | 'pt-BR' | 'ro-RO' | 'ru-RU'
-  | 'sk-SK' | 'sl-SL' | 'es-ES' | 'sv-SV'
+const TargetLanguageMap = {
+  'bg-BG': 'bg-BG',
+  'zh-CN': 'zh-ZH',
+  'cs-CZ': 'cs-CS',
+  'da-DK': 'da-DA',
+  'nl-NL': 'nl-NL',
+  'en-US': 'en-US',
+  'en-GB': 'en-GB',
+  'et-ET': 'et-ET',
+  'fi-FI': 'fi-FI',
+  'fr-FR': 'fr-FR',
+  'de-DE': 'de-DE',
+  'el-GR': 'el-EL',
+  'hu-HU': 'hu-HU',
+  'it-IT': 'it-IT',
+  'ja-JP': 'ja-JA',
+  'lv-LV': 'lv-LV',
+  'lt-LT': 'lt-LT',
+  'pl-PL': 'pl-PL',
+  'pt-PT': 'pt-PT',
+  'pt-BR': 'pt-BR',
+  'ro-RO': 'ro-RO',
+  'ru-RU': 'ru-RU',
+  'sk-SK': 'sk-SK',
+  'sl-SL': 'sl-SL',
+  'es-ES': 'es-ES',
+  'sv-SV': 'sv-SV',
+}
+type TargetLanguage = keyof typeof TargetLanguageMap
 
 export interface Options {
   sourceLanguage?: SourceLanguage,
@@ -46,6 +71,7 @@ async function translatePhrase(text: string, options: Options) {
   const browser = await getBrowser()
   const page = await browser.newPage()
   const defaultDelay = options.defaultDelay || 150
+  const targetLanguage = TargetLanguageMap[options.targetLanguage]
 
   const waitForTranslation = async () => {
     await sleepMs(1000)
@@ -69,7 +95,7 @@ async function translatePhrase(text: string, options: Options) {
   await sleepMs(defaultDelay)
   await page.click('.lmt__language_select--target .lmt__language_select__active')
   await sleepMs(defaultDelay)
-  await page.click(`.lmt__language_select__menu_target [dl-test="translator-lang-option-${options.targetLanguage}"]`)
+  await page.click(`.lmt__language_select__menu_target [dl-test="translator-lang-option-${targetLanguage}"]`)
   await sleepMs(defaultDelay)
 
   await page.click('.lmt__source_textarea')
