@@ -67,75 +67,91 @@ const sleepMs = (ms: number) => new Promise(r => setTimeout(r, ms))
 const hasSelector = (page: Page, selector: string) => page.evaluate(s =>
   !!document.querySelector(s), [selector])
 
+const selectors = {
+  cookieBannerDismiss: '.dl_cookieBanner--buttonSelected',
+  translationActive: '.lmt:not(.lmt--active_translation_request)',
+  selectSourceLanguageButton: 'button[dl-test="translator-source-lang-btn"]',
+  selectTargetLanguageButton: 'button[dl-test="translator-target-lang-btn"]',
+  sourceLanguageOption: (language: SourceLanguage) => `[role="listbox"] [dl-test="translator-lang-option-${language}"]`,
+  targetLanguageOption: (language: TargetLanguage) => `[role="listbox"] [dl-test="translator-lang-option-${language}"]`,
+  sourceTextarea: '.lmt__source_textarea',
+  targetTextarea: '.lmt__target_textarea',
+  formalityToggler: '.lmt__formalitySwitch__toggler',
+  formalitySwitch: '.lmt__formalitySwitch',
+  formalitySwitchMenu: '.lmt__formalitySwitch__menu',
+  formalOption: '.lmt__formalitySwitch__menu_item_container:nth-child(1) .lmt__formalitySwitch__menu_item',
+  informalOption: '.lmt__formalitySwitch__menu_item_container:nth-child(2) .lmt__formalitySwitch__menu_item',
+}
+
 async function translatePhrase(text: string, options: Options) {
   const browser = await getBrowser()
   const page = await browser.newPage()
   const defaultDelay = options.defaultDelay || 150
-  const targetLanguage = TargetLanguageMap[options.targetLanguage]
+  const targetLanguage = TargetLanguageMap[options.targetLanguage] as TargetLanguage
 
   const waitForTranslation = async () => {
     await sleepMs(1000)
-    await page.waitForSelector('.lmt:not(.lmt--active_translation_request)')
+    await page.waitForSelector(selectors.translationActive)
     await sleepMs(1000)
   }
   await page.goto('https://www.deepl.com/translator')
-  await page.waitForSelector('.lmt__language_select--target .lmt__language_select__active')
+  await page.waitForSelector(selectors.selectTargetLanguageButton)
 
-  while (await hasSelector(page, '.dl_cookieBanner--buttonSelected')) {
-    await page.click('.dl_cookieBanner--buttonSelected')
+  while (await hasSelector(page, selectors.cookieBannerDismiss)) {
+    await page.click(selectors.cookieBannerDismiss)
     await sleepMs(1000)
   }
 
   if (options.sourceLanguage) {
     await sleepMs(defaultDelay)
-    await page.click('.lmt__language_select--source .lmt__language_select__active')
+    console.log('CLICK', options.sourceLanguage)
+    await page.screenshot({ path: `/tmp/screenshot_${Date.now()}.png` })
+    await page.waitForSelector(selectors.selectSourceLanguageButton)
+    await page.click(selectors.selectSourceLanguageButton)
     await sleepMs(defaultDelay)
-    await page.click(`.lmt__language_select__menu_source [dl-test="translator-lang-option-${options.sourceLanguage}"]`)
+    await page.click(selectors.sourceLanguageOption(options.sourceLanguage))
   }
   await sleepMs(defaultDelay)
-  await page.click('.lmt__language_select--target .lmt__language_select__active')
+  await page.click(selectors.selectTargetLanguageButton)
   await sleepMs(defaultDelay)
-  await page.click(`.lmt__language_select__menu_target [dl-test="translator-lang-option-${targetLanguage}"]`)
+  await page.click(selectors.targetLanguageOption(targetLanguage))
   await sleepMs(defaultDelay)
 
-  await page.click('.lmt__source_textarea')
+  await page.click(selectors.sourceTextarea)
   await sleepMs(defaultDelay)
   await page.keyboard.type(text)
   await waitForTranslation()
 
   if (options.formality) {
-    if (!await hasSelector(page, '.lmt__formalitySwitch__toggler')) {
+    if (!await hasSelector(page, selectors.formalityToggler)) {
       throw new Error('Cannot switch formality')
     }
 
-    await page.evaluate(() => {
-      const node = document.querySelector('.lmt__formalitySwitch')
+    await page.evaluate((selector) => {
+      const node = document.querySelector(selector)
       if (!node) return
-      node.classList.add('dl_visible')
-      node.classList.add('dl_visible_2')
-      node.classList.add('lmt__formalitySwitch--is-open_0')
-      node.classList.add('lmt__formalitySwitch--is-open')
-    })
+      node.classList.add('dl_visible', 'dl_visible_2', 'lmt__formalitySwitch--is-open_0', 'lmt__formalitySwitch--is-open')
+    }, selectors.formalitySwitch)
 
     await sleepMs(defaultDelay)
     if (options.formality === 'formal') {
-      await page.click('.lmt__formalitySwitch__toggler')
-      await page.waitForSelector('.lmt__formalitySwitch__menu')
-      await page.click('.lmt__formalitySwitch__menu_item_container:nth-child(1) .lmt__formalitySwitch__menu_item')
+      await page.click(selectors.formalityToggler)
+      await page.waitForSelector(selectors.formalitySwitchMenu)
+      await page.click(selectors.formalOption)
     } else if (options.formality === 'informal') {
-      await page.click('.lmt__formalitySwitch__toggler')
-      await page.waitForSelector('.lmt__formalitySwitch__menu')
-      await page.click('.lmt__formalitySwitch__menu_item_container:nth-child(2) .lmt__formalitySwitch__menu_item')
+      await page.click(selectors.formalityToggler)
+      await page.waitForSelector(selectors.formalitySwitchMenu)
+      await page.click(selectors.informalOption)
     }
 
     await waitForTranslation()
   }
 
-  const result = await page.evaluate(() => {
-    const node = document.querySelector('.lmt__target_textarea') as HTMLTextAreaElement
+  const result = await page.evaluate((selector) => {
+    const node = document.querySelector(selector) as HTMLTextAreaElement
     if (!node) return ''
     return node.value
-  })
+  }, selectors.targetTextarea)
   await page.close()
   return result
 }
