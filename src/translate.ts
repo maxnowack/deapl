@@ -104,7 +104,6 @@ async function translatePhrase(text: string, options: Options) {
 
   if (options.sourceLanguage) {
     await sleepMs(defaultDelay)
-    console.log('CLICK', options.sourceLanguage)
     await page.screenshot({ path: `/tmp/screenshot_${Date.now()}.png` })
     await page.waitForSelector(selectors.selectSourceLanguageButton)
     await page.click(selectors.selectSourceLanguageButton)
