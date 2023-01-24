@@ -68,6 +68,7 @@ const hasSelector = (page: Page, selector: string) => page.evaluate(s =>
   !!document.querySelector(s), [selector])
 
 const selectors = {
+  dialogDismiss: '[role=dialog] button[aria-label=Close]',
   cookieBannerDismiss: '.dl_cookieBanner--buttonSelected',
   translationActive: '.lmt:not(.lmt--active_translation_request)',
   selectSourceLanguageButton: 'button[dl-test="translator-source-lang-btn"]',
@@ -99,6 +100,11 @@ async function translatePhrase(text: string, options: Options) {
 
   while (await hasSelector(page, selectors.cookieBannerDismiss)) {
     await page.click(selectors.cookieBannerDismiss)
+    await sleepMs(1000)
+  }
+
+  while (await hasSelector(page, selectors.dialogDismiss)) {
+    await page.click(selectors.dialogDismiss)
     await sleepMs(1000)
   }
 
