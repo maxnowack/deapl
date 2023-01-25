@@ -2,9 +2,11 @@
 import puppeteer, { Browser, Page } from 'puppeteer'
 import PQueue from 'p-queue'
 
-type SourceLanguage = 'bg' | 'zh' | 'cs' | 'da' | 'nl' | 'en' | 'et' | 'fi'
-  | 'fr' | 'de' | 'el' | 'hu' | 'it' | 'ja' | 'lv' | 'lt' | 'pl' | 'pt'
-  | 'ro' | 'ru' | 'sk' | 'sl' | 'es' | 'sv'
+type SourceLanguage = 'bg' | 'zh' | 'cs' | 'da' | 'nl'
+  | 'en' | 'et' | 'fi' | 'fr' | 'de' | 'el'
+  | 'hu' | 'id' | 'it' | 'ja' | 'lv' | 'lt'
+  | 'pl' | 'pt' | 'ro' | 'ru' | 'sk' | 'sl'
+  | 'es' | 'sv' | 'tr' | 'uk'
 const TargetLanguageMap = {
   'bg-BG': 'bg',
   'zh-CN': 'zh',
@@ -19,6 +21,7 @@ const TargetLanguageMap = {
   'de-DE': 'de',
   'el-GR': 'el',
   'hu-HU': 'hu',
+  'id-ID': 'id',
   'it-IT': 'it',
   'ja-JP': 'ja',
   'lv-LV': 'lv',
@@ -32,6 +35,8 @@ const TargetLanguageMap = {
   'sl-SL': 'sl',
   'es-ES': 'es',
   'sv-SV': 'sv',
+  'tr-TR': 'tr',
+  'uk-UA': 'uk',
 }
 type TargetLanguage = keyof typeof TargetLanguageMap
 
