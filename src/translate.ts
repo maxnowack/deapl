@@ -7,6 +7,10 @@ import PQueue from 'p-queue'
 puppeteer.use(StealthPlugin())
 
 const saveScreenshotOnFail = process.env.DEAPL_SAVE_SCREENSHOT === '1'
+const defaultViewport = {
+  width: 1280,
+  height: 1024,
+}
 
 type SourceLanguage = 'bg' | 'zh' | 'cs' | 'da' | 'nl'
   | 'en' | 'et' | 'fi' | 'fr' | 'de' | 'el'
@@ -60,10 +64,7 @@ const getBrowser = () => {
       executablePath: executablePath(),
       // headless: false,
       // args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      defaultViewport: {
-        width: 1280,
-        height: 1024,
-      },
+      defaultViewport,
     })
   }
   return browserPromise
@@ -100,6 +101,7 @@ const selectors = {
 async function translatePhrase(text: string, options: Options) {
   const browser = await getBrowser()
   const page = await browser.newPage()
+  await page.setViewport(defaultViewport)
   const defaultDelay = options.defaultDelay || 150
   const targetLanguage = TargetLanguageMap[options.targetLanguage] as TargetLanguage
 
