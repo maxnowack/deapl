@@ -68,9 +68,11 @@ export async function kill() {
   await browser.close()
 }
 
-const sleepMs = (ms: number) => new Promise(r => setTimeout(r, ms))
+const sleepMs = (ms: number) => new Promise((resolve) => {
+  setTimeout(resolve, ms)
+})
 const hasSelector = (page: Page, selector: string) => page.evaluate(s =>
-  !!document.querySelector(s), [selector])
+  !!document.querySelector(s), selector)
 
 const selectors = {
   dialogDismiss: '[role=dialog] button[aria-label=Close]',
