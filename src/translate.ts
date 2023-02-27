@@ -63,7 +63,7 @@ const getBrowser = () => {
     browserPromise = puppeteer.launch({
       executablePath: executablePath(),
       // headless: false,
-      // args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: [`--window-size=${defaultViewport.width},${defaultViewport.height}`],
       defaultViewport,
     })
   }
@@ -101,7 +101,6 @@ const selectors = {
 async function translatePhrase(text: string, options: Options) {
   const browser = await getBrowser()
   const page = await browser.newPage()
-  await page.setViewport(defaultViewport)
   const defaultDelay = options.defaultDelay || 150
   const targetLanguage = TargetLanguageMap[options.targetLanguage] as TargetLanguage
 
