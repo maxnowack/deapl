@@ -59,7 +59,7 @@ const getBrowser = () => {
       // headless: false,
       // args: ['--no-sandbox', '--disable-setuid-sandbox'],
       defaultViewport: {
-        width: 800,
+        width: 1280,
         height: 600,
       },
     })
@@ -91,9 +91,8 @@ const selectors = {
   targetTextarea: '.lmt__target_textarea',
   formalityToggler: '.lmt__formalitySwitch__toggler',
   formalitySwitch: '.lmt__formalitySwitch',
-  formalitySwitchMenu: '.lmt__formalitySwitch__menu',
-  formalOption: '.lmt__formalitySwitch__menu_item_container:nth-child(1) .lmt__formalitySwitch__menu_item',
-  informalOption: '.lmt__formalitySwitch__menu_item_container:nth-child(2) .lmt__formalitySwitch__menu_item',
+  formalOption: '.lmt__formalitySwitch button:nth-child(1)',
+  informalOption: '.lmt__formalitySwitch button:nth-child(2)',
 }
 
 async function translatePhrase(text: string, options: Options) {
@@ -153,11 +152,11 @@ async function translatePhrase(text: string, options: Options) {
     await sleepMs(defaultDelay)
     if (options.formality === 'formal') {
       await page.click(selectors.formalityToggler)
-      await page.waitForSelector(selectors.formalitySwitchMenu)
+      await page.waitForSelector(selectors.formalOption)
       await page.click(selectors.formalOption)
     } else if (options.formality === 'informal') {
       await page.click(selectors.formalityToggler)
-      await page.waitForSelector(selectors.formalitySwitchMenu)
+      await page.waitForSelector(selectors.informalOption)
       await page.click(selectors.informalOption)
     }
 
