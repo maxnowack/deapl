@@ -1,6 +1,10 @@
 /* eslint-disable no-await-in-loop */
-import puppeteer, { Browser, Page } from 'puppeteer'
+import { Browser, Page, executablePath } from 'puppeteer'
+import puppeteer from 'puppeteer-extra'
+import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 import PQueue from 'p-queue'
+
+puppeteer.use(StealthPlugin())
 
 type SourceLanguage = 'bg' | 'zh' | 'cs' | 'da' | 'nl'
   | 'en' | 'et' | 'fi' | 'fr' | 'de' | 'el'
@@ -51,6 +55,7 @@ let browserPromise: Promise<Browser> | undefined
 const getBrowser = () => {
   if (!browserPromise) {
     browserPromise = puppeteer.launch({
+      executablePath: executablePath(),
       // headless: false,
       // args: ['--no-sandbox', '--disable-setuid-sandbox'],
       defaultViewport: {

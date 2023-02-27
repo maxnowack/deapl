@@ -25,7 +25,9 @@
   ],
   "dependencies": {
     "p-queue": "^6.6.2",
-    "puppeteer": "^19.7.2"
+    "puppeteer": "^19.7.2",
+    "puppeteer-extra": "^3.3.4",
+    "puppeteer-extra-plugin-stealth": "^2.11.1"
   },
   "devDependencies": {
     "@types/puppeteer": "^5.4.7",
