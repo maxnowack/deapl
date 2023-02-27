@@ -1,6 +1,6 @@
 {
   "name": "deapl",
-  "version": "2.1.10",
+  "version": "2.1.11",
   "description": "Automatic translations with deepl.com and puppeteer",
   "main": "dist/index.js",
   "scripts": {
