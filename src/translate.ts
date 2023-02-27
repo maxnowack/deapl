@@ -62,7 +62,7 @@ const getBrowser = () => {
       // args: ['--no-sandbox', '--disable-setuid-sandbox'],
       defaultViewport: {
         width: 1280,
-        height: 600,
+        height: 1024,
       },
     })
   }
