@@ -6,6 +6,8 @@ import PQueue from 'p-queue'
 
 puppeteer.use(StealthPlugin())
 
+const saveScreenshotOnFail = process.env.DEAPL_SAVE_SCREENSHOT === '1'
+
 type SourceLanguage = 'bg' | 'zh' | 'cs' | 'da' | 'nl'
   | 'en' | 'et' | 'fi' | 'fr' | 'de' | 'el'
   | 'hu' | 'id' | 'it' | 'ja' | 'lv' | 'lt'
@@ -101,67 +103,75 @@ async function translatePhrase(text: string, options: Options) {
   const defaultDelay = options.defaultDelay || 150
   const targetLanguage = TargetLanguageMap[options.targetLanguage] as TargetLanguage
 
-  const waitForTranslation = async () => {
-    await sleepMs(1000)
-    await page.waitForSelector(selectors.translationActive)
-    await sleepMs(1000)
-  }
-  await page.goto('https://www.deepl.com/translator')
-  await page.waitForSelector(selectors.selectTargetLanguageButton)
+  const doTranslation = async () => {
+    const waitForTranslation = async () => {
+      await sleepMs(1000)
+      await page.waitForSelector(selectors.translationActive)
+      await sleepMs(1000)
+    }
+    await page.goto('https://www.deepl.com/translator')
+    await page.waitForSelector(selectors.selectTargetLanguageButton)
 
-  while (await hasSelector(page, selectors.cookieBannerDismiss)) {
-    await page.click(selectors.cookieBannerDismiss)
-    await sleepMs(1000)
-  }
-
-  while (await hasSelector(page, selectors.dialogDismiss)) {
-    await page.click(selectors.dialogDismiss)
-    await sleepMs(1000)
-  }
-
-  if (options.sourceLanguage) {
-    await sleepMs(defaultDelay)
-    await page.screenshot({ path: `/tmp/screenshot_${Date.now()}.png` })
-    await page.waitForSelector(selectors.selectSourceLanguageButton)
-    await page.click(selectors.selectSourceLanguageButton)
-    await sleepMs(defaultDelay)
-    await page.click(selectors.sourceLanguageOption(options.sourceLanguage))
-  }
-  await sleepMs(defaultDelay)
-  await page.click(selectors.selectTargetLanguageButton)
-  await sleepMs(defaultDelay)
-  await page.click(selectors.targetLanguageOption(targetLanguage))
-  await sleepMs(defaultDelay)
-
-  await page.click(selectors.sourceTextarea)
-  await sleepMs(defaultDelay)
-  await page.keyboard.type(text)
-  await waitForTranslation()
-
-  if (options.formality) {
-    if (!await hasSelector(page, selectors.formalityToggler)) {
-      throw new Error('Cannot switch formality')
+    while (await hasSelector(page, selectors.cookieBannerDismiss)) {
+      await page.click(selectors.cookieBannerDismiss)
+      await sleepMs(1000)
     }
 
-    await page.evaluate((selector) => {
-      const node = document.querySelector(selector)
-      if (!node) return
-      node.classList.add('dl_visible', 'dl_visible_2', 'lmt__formalitySwitch--is-open_0', 'lmt__formalitySwitch--is-open')
-    }, selectors.formalitySwitch)
-
-    await sleepMs(defaultDelay)
-    if (options.formality === 'formal') {
-      await page.click(selectors.formalityToggler)
-      await page.waitForSelector(selectors.formalOption)
-      await page.click(selectors.formalOption)
-    } else if (options.formality === 'informal') {
-      await page.click(selectors.formalityToggler)
-      await page.waitForSelector(selectors.informalOption)
-      await page.click(selectors.informalOption)
+    while (await hasSelector(page, selectors.dialogDismiss)) {
+      await page.click(selectors.dialogDismiss)
+      await sleepMs(1000)
     }
 
+    if (options.sourceLanguage) {
+      await sleepMs(defaultDelay)
+      await page.waitForSelector(selectors.selectSourceLanguageButton)
+      await page.click(selectors.selectSourceLanguageButton)
+      await sleepMs(defaultDelay)
+      await page.click(selectors.sourceLanguageOption(options.sourceLanguage))
+    }
+    await sleepMs(defaultDelay)
+    await page.click(selectors.selectTargetLanguageButton)
+    await sleepMs(defaultDelay)
+    await page.click(selectors.targetLanguageOption(targetLanguage))
+    await sleepMs(defaultDelay)
+
+    await page.click(selectors.sourceTextarea)
+    await sleepMs(defaultDelay)
+    await page.keyboard.type(text)
     await waitForTranslation()
+
+    if (options.formality) {
+      if (!await hasSelector(page, selectors.formalityToggler)) {
+        throw new Error('Cannot switch formality')
+      }
+
+      await page.evaluate((selector) => {
+        const node = document.querySelector(selector)
+        if (!node) return
+        node.classList.add('dl_visible', 'dl_visible_2', 'lmt__formalitySwitch--is-open_0', 'lmt__formalitySwitch--is-open')
+      }, selectors.formalitySwitch)
+
+      await sleepMs(defaultDelay)
+      if (options.formality === 'formal') {
+        await page.click(selectors.formalityToggler)
+        await page.waitForSelector(selectors.formalOption)
+        await page.click(selectors.formalOption)
+      } else if (options.formality === 'informal') {
+        await page.click(selectors.formalityToggler)
+        await page.waitForSelector(selectors.informalOption)
+        await page.click(selectors.informalOption)
+      }
+
+      await waitForTranslation()
+    }
   }
+
+  await doTranslation()
+    .catch((err) => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      if (saveScreenshotOnFail) page.screenshot({ path: `/tmp/screenshot_${Date.now()}.png` }).catch(() => {})
+      throw err
+    })
 
   const result = await page.evaluate((selector) => {
     const node = document.querySelector(selector) as HTMLTextAreaElement
