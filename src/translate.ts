@@ -86,16 +86,16 @@ const selectors = {
   dialogDismiss: '[role=dialog] button[aria-label=Close]',
   cookieBannerDismiss: '.dl_cookieBanner--buttonSelected',
   translationActive: '.lmt:not(.lmt--active_translation_request)',
-  selectSourceLanguageButton: 'button[dl-test="translator-source-lang-btn"]',
-  selectTargetLanguageButton: 'button[dl-test="translator-target-lang-btn"]',
-  sourceLanguageOption: (language: SourceLanguage) => `[dl-test="translator-source-lang-list"] [dl-test="translator-lang-option-${language}"]`,
-  targetLanguageOption: (language: TargetLanguage) => `[dl-test="translator-target-lang-list"] [dl-test="translator-lang-option-${language}"]`,
+  selectSourceLanguageButton: 'button[data-testid="translator-source-lang-btn"]',
+  selectTargetLanguageButton: 'button[data-testid="translator-target-lang-btn"]',
+  sourceLanguageOption: (language: SourceLanguage) => `[data-testid="translator-source-lang-list"] [data-testid="translator-lang-option-${language}"]`,
+  targetLanguageOption: (language: TargetLanguage) => `[data-testid="translator-target-lang-list"] [data-testid="translator-lang-option-${language}"]`,
   sourceTextarea: '.lmt__source_textarea',
   targetTextarea: '.lmt__target_textarea',
   formalityToggler: '.lmt__formalitySwitch__toggler',
   formalitySwitch: '.lmt__formalitySwitch',
-  formalOption: '.lmt__formalitySwitch button:nth-child(1)',
-  informalOption: '.lmt__formalitySwitch button:nth-child(2)',
+  formalOption: '.lmt__formalitySwitch div button:nth-child(1)',
+  informalOption: '.lmt__formalitySwitch div button:nth-child(2)',
 }
 
 async function translatePhrase(text: string, options: Options) {
@@ -118,6 +118,7 @@ async function translatePhrase(text: string, options: Options) {
       await sleepMs(1000)
     }
 
+    await sleepMs(2000)
     while (await hasSelector(page, selectors.dialogDismiss)) {
       await page.click(selectors.dialogDismiss)
       await sleepMs(1000)
@@ -145,12 +146,6 @@ async function translatePhrase(text: string, options: Options) {
       if (!await hasSelector(page, selectors.formalityToggler)) {
         throw new Error('Cannot switch formality')
       }
-
-      await page.evaluate((selector) => {
-        const node = document.querySelector(selector)
-        if (!node) return
-        node.classList.add('dl_visible', 'dl_visible_2', 'lmt__formalitySwitch--is-open_0', 'lmt__formalitySwitch--is-open')
-      }, selectors.formalitySwitch)
 
       await sleepMs(defaultDelay)
       if (options.formality === 'formal') {
