@@ -102,53 +102,50 @@ const selectors = {
 async function translatePhrase(text: string, options: Options) {
   const browser = await getBrowser()
   const page = await browser.newPage()
-  const defaultDelay = options.defaultDelay || 150
   const targetLanguage = TargetLanguageMap[options.targetLanguage] as TargetLanguage
 
-  const sleepMsAndDismissDialog = async (ms: number) => {
-    await sleepMs(ms)
+  const dismissDialogs = async () => {
     while (await hasSelector(page, selectors.cookieBannerDismiss)) {
       await page.click(selectors.cookieBannerDismiss)
-      await sleepMs(1000)
     }
     while (await hasSelector(page, selectors.dialogDismiss)) {
       await page.click(selectors.dialogDismiss)
-      await sleepMs(1000)
     }
   }
 
   const doTranslation = async () => {
     const waitForTranslation = async () => {
-      await sleepMsAndDismissDialog(1000)
+      await sleepMs(1000)
+      await dismissDialogs()
       await page.waitForSelector(selectors.translationActive, { hidden: true })
-      await sleepMsAndDismissDialog(1000)
+      await dismissDialogs()
     }
     await page.goto('https://www.deepl.com/translator')
     await page.waitForSelector(selectors.selectTargetLanguageButton)
 
     if (options.sourceLanguage) {
-      await sleepMsAndDismissDialog(defaultDelay)
+      await dismissDialogs()
       while (!await hasSelector(page, selectors.sourceLangList)) {
         await page.waitForSelector(selectors.selectSourceLanguageButton)
         await page.click(selectors.selectSourceLanguageButton)
-        await sleepMsAndDismissDialog(defaultDelay)
+        await dismissDialogs()
       }
       await page.waitForSelector(selectors.sourceLanguageOption(options.sourceLanguage))
       await page.click(selectors.sourceLanguageOption(options.sourceLanguage))
     }
 
-    await sleepMsAndDismissDialog(defaultDelay)
+    await dismissDialogs()
     while (!await hasSelector(page, selectors.targetLangList)) {
       await page.waitForSelector(selectors.selectTargetLanguageButton)
       await page.click(selectors.selectTargetLanguageButton)
-      await sleepMsAndDismissDialog(defaultDelay)
+      await dismissDialogs()
     }
     await page.waitForSelector(selectors.targetLanguageOption(targetLanguage))
     await page.click(selectors.targetLanguageOption(targetLanguage))
-    await sleepMsAndDismissDialog(defaultDelay)
+    await dismissDialogs()
 
     await page.click(selectors.sourceTextarea)
-    await sleepMsAndDismissDialog(defaultDelay)
+    await dismissDialogs()
     await page.keyboard.type(text)
     await waitForTranslation()
 
@@ -157,7 +154,7 @@ async function translatePhrase(text: string, options: Options) {
         throw new Error('Cannot switch formality')
       }
 
-      await sleepMsAndDismissDialog(defaultDelay)
+      await dismissDialogs()
       if (options.formality === 'formal') {
         await page.click(selectors.formalityToggler)
         await page.waitForSelector(selectors.formalOption)
