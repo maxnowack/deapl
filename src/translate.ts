@@ -62,7 +62,7 @@ const getBrowser = () => {
   if (!browserPromise) {
     browserPromise = puppeteer.launch({
       executablePath: executablePath(),
-      // headless: false,
+      headless: process.env.DEAPL_HEADLESS !== '0',
       args: [`--window-size=${defaultViewport.width},${defaultViewport.height}`],
       defaultViewport,
     })
