@@ -81,15 +81,20 @@ const sleepMs = (ms: number) => new Promise((resolve) => {
 })
 const hasSelector = (page: Page, selector: string) => page.evaluate(s =>
   !!document.querySelector(s), selector)
-const clickElement = (
+async function clickElement(
   page: Page,
   selector: string,
   failSilently = false,
-) => page.evaluate((sel, returnIfNotFound) => {
-  const element: HTMLElement | null = document.querySelector(sel)
-  if (!element && !returnIfNotFound) throw new Error(`Element not found: ${sel}`)
-  if (element) element.click()
-}, selector, failSilently)
+) {
+  const result = await page.evaluate((sel) => {
+    const element: HTMLElement | null = document.querySelector(sel)
+    if (!element) return false
+    element.click()
+    return true
+  }, selector)
+  if (!failSilently && !result) throw new Error(`Element not found: ${selector}`)
+  if (!result) console.warn('Element not found:', selector)
+}
 
 const selectors = {
   dialogDismiss: '[data-testid="chrome-extension-toast"] button',
@@ -114,53 +119,64 @@ async function translatePhrase(text: string, options: Options) {
   const page = await browser.newPage()
   const targetLanguage = TargetLanguageMap[options.targetLanguage] as TargetLanguage
 
-  const dismissDialogs = async () => {
-    while (await hasSelector(page, selectors.cookieBannerDismiss)) {
-      await clickElement(page, selectors.cookieBannerDismiss, true)
-    }
-    while (await hasSelector(page, selectors.floaterButton)) {
-      await clickElement(page, selectors.floaterButton, true)
-    }
-    while (await hasSelector(page, selectors.dialogDismiss)) {
-      await clickElement(page, selectors.dialogDismiss, true)
-    }
-  }
-
   const doTranslation = async () => {
     const waitForTranslation = async () => {
       await sleepMs(options.defaultDelay ?? 1000)
-      await dismissDialogs()
       await page.waitForSelector(selectors.translationActive, { hidden: true })
-      await dismissDialogs()
     }
+    // set privacy settings
+    await page.setCookie({
+      name: 'privacySettings',
+      value: encodeURIComponent(JSON.stringify({
+        v: 2,
+        t: Math.floor(Date.now() / 1000),
+        m: 'STRICT',
+        consent: ['NECESSARY'],
+      })),
+      domain: '.deepl.com',
+    })
+    await page.evaluateOnNewDocument(() => {
+      window.localStorage.setItem('LMT_browserExtensionPromo', JSON.stringify({
+        dismissed: true,
+        'dismissed__%expires': 4844479408,
+      }))
+      window.localStorage.setItem('LMT_docTransOnboarding', JSON.stringify({
+        suppressed: true,
+        'suppressed__%expires': 4844479408,
+      }))
+      window.localStorage.setItem('LMT_advanced_mode', JSON.stringify({
+        onboardingDismissed: true,
+        'onboardingDismissed__%expires': 4844479408,
+      }))
+      window.localStorage.setItem('LMT_vertical_product_navigation', JSON.stringify({
+        onboardingDismissed: true,
+        'onboardingDismissed__%expires': 4844479408,
+      }))
+      window.localStorage.setItem('LMT_postSignupCallout', JSON.stringify({
+        visible: false,
+        'visible__%expires': 4844479408,
+      }))
+    })
     await page.goto('https://www.deepl.com/translator')
     await page.waitForSelector(selectors.selectTargetLanguageButton)
 
     if (options.sourceLanguage) {
-      await dismissDialogs()
       while (!await hasSelector(page, selectors.sourceLangList)) {
         await page.waitForSelector(selectors.selectSourceLanguageButton)
         await clickElement(page, selectors.selectSourceLanguageButton)
-        await dismissDialogs()
       }
       await page.waitForSelector(selectors.sourceLanguageOption(options.sourceLanguage))
       await clickElement(page, selectors.sourceLanguageOption(options.sourceLanguage))
     }
 
-    // await sleepMs(options.defaultDelay ?? 500)
-    await dismissDialogs()
-    // await sleepMs(options.defaultDelay ?? 500)
     while (!await hasSelector(page, selectors.targetLangList)) {
       await page.waitForSelector(selectors.selectTargetLanguageButton)
       await clickElement(page, selectors.selectTargetLanguageButton)
-      await dismissDialogs()
     }
     await page.waitForSelector(selectors.targetLanguageOption(targetLanguage))
     await clickElement(page, selectors.targetLanguageOption(targetLanguage))
-    await dismissDialogs()
 
     await clickElement(page, selectors.sourceTextarea)
-    await dismissDialogs()
     await page.keyboard.type(text)
     await waitForTranslation()
 
@@ -169,7 +185,6 @@ async function translatePhrase(text: string, options: Options) {
         throw new Error('Cannot switch formality')
       }
 
-      await dismissDialogs()
       if (options.formality === 'formal') {
         await clickElement(page, selectors.formalityToggler)
         await page.waitForSelector(selectors.formalOption)
