@@ -8,8 +8,8 @@ puppeteer.use(StealthPlugin())
 
 const saveScreenshotOnFail = process.env.DEAPL_SAVE_SCREENSHOT === '1'
 const defaultViewport = {
-  width: 1280,
-  height: 1024,
+  width: 1024,
+  height: 768,
 }
 
 type SourceLanguage = 'bg' | 'zh' | 'cs' | 'da' | 'nl'
@@ -81,6 +81,15 @@ const sleepMs = (ms: number) => new Promise((resolve) => {
 })
 const hasSelector = (page: Page, selector: string) => page.evaluate(s =>
   !!document.querySelector(s), selector)
+const clickElement = (
+  page: Page,
+  selector: string,
+  failSilently = false,
+) => page.evaluate((sel, returnIfNotFound) => {
+  const element: HTMLElement | null = document.querySelector(sel)
+  if (!element && !returnIfNotFound) throw new Error(`Element not found: ${sel}`)
+  if (element) element.click()
+}, selector, failSilently)
 
 const selectors = {
   dialogDismiss: '[data-testid="chrome-extension-toast"] button',
@@ -97,6 +106,7 @@ const selectors = {
   formalityToggler: 'button[data-testid="formality-button"]',
   formalOption: 'button[data-testid="formality-menu-entry-formal"]',
   informalOption: 'button[data-testid="formality-menu-entry-formal"] + button',
+  floaterButton: '.__floater.__floater__open button[data-action=primary]',
 }
 
 async function translatePhrase(text: string, options: Options) {
@@ -106,16 +116,19 @@ async function translatePhrase(text: string, options: Options) {
 
   const dismissDialogs = async () => {
     while (await hasSelector(page, selectors.cookieBannerDismiss)) {
-      await page.click(selectors.cookieBannerDismiss)
+      await clickElement(page, selectors.cookieBannerDismiss, true)
+    }
+    while (await hasSelector(page, selectors.floaterButton)) {
+      await clickElement(page, selectors.floaterButton, true)
     }
     while (await hasSelector(page, selectors.dialogDismiss)) {
-      await page.click(selectors.dialogDismiss)
+      await clickElement(page, selectors.dialogDismiss, true)
     }
   }
 
   const doTranslation = async () => {
     const waitForTranslation = async () => {
-      await sleepMs(1000)
+      await sleepMs(options.defaultDelay ?? 1000)
       await dismissDialogs()
       await page.waitForSelector(selectors.translationActive, { hidden: true })
       await dismissDialogs()
@@ -127,24 +140,26 @@ async function translatePhrase(text: string, options: Options) {
       await dismissDialogs()
       while (!await hasSelector(page, selectors.sourceLangList)) {
         await page.waitForSelector(selectors.selectSourceLanguageButton)
-        await page.click(selectors.selectSourceLanguageButton)
+        await clickElement(page, selectors.selectSourceLanguageButton)
         await dismissDialogs()
       }
       await page.waitForSelector(selectors.sourceLanguageOption(options.sourceLanguage))
-      await page.click(selectors.sourceLanguageOption(options.sourceLanguage))
+      await clickElement(page, selectors.sourceLanguageOption(options.sourceLanguage))
     }
 
+    // await sleepMs(options.defaultDelay ?? 500)
     await dismissDialogs()
+    // await sleepMs(options.defaultDelay ?? 500)
     while (!await hasSelector(page, selectors.targetLangList)) {
       await page.waitForSelector(selectors.selectTargetLanguageButton)
-      await page.click(selectors.selectTargetLanguageButton)
+      await clickElement(page, selectors.selectTargetLanguageButton)
       await dismissDialogs()
     }
     await page.waitForSelector(selectors.targetLanguageOption(targetLanguage))
-    await page.click(selectors.targetLanguageOption(targetLanguage))
+    await clickElement(page, selectors.targetLanguageOption(targetLanguage))
     await dismissDialogs()
 
-    await page.click(selectors.sourceTextarea)
+    await clickElement(page, selectors.sourceTextarea)
     await dismissDialogs()
     await page.keyboard.type(text)
     await waitForTranslation()
@@ -156,13 +171,13 @@ async function translatePhrase(text: string, options: Options) {
 
       await dismissDialogs()
       if (options.formality === 'formal') {
-        await page.click(selectors.formalityToggler)
+        await clickElement(page, selectors.formalityToggler)
         await page.waitForSelector(selectors.formalOption)
-        await page.click(selectors.formalOption)
+        await clickElement(page, selectors.formalOption)
       } else if (options.formality === 'informal') {
-        await page.click(selectors.formalityToggler)
+        await clickElement(page, selectors.formalityToggler)
         await page.waitForSelector(selectors.informalOption)
-        await page.click(selectors.informalOption)
+        await clickElement(page, selectors.informalOption)
       }
 
       await waitForTranslation()
