@@ -19,7 +19,7 @@ type SourceLanguage = 'bg' | 'zh' | 'cs' | 'da' | 'nl'
   | 'es' | 'sv' | 'tr' | 'uk'
 const TargetLanguageMap = {
   'bg-BG': 'bg',
-  'zh-CN': 'zh',
+  'zh-CN': 'zh-Hans',
   'cs-CZ': 'cs',
   'da-DK': 'da',
   'nl-NL': 'nl',
