@@ -99,7 +99,8 @@ async function clickElement(
 const selectors = {
   dialogDismiss: '[data-testid="chrome-extension-toast"] button',
   cookieBannerDismiss: 'button[data-testid="cookie-banner-strict-accept-selected"]',
-  translationActive: '[data-testid="translator-inline-loading-indicator"]',
+  translationActive: '#progress-text',
+  langDetectionActive: '[data-testid="translator-source-lang-detection-in-progress"]',
   selectSourceLanguageButton: 'button[data-testid="translator-source-lang-btn"]',
   selectTargetLanguageButton: 'button[data-testid="translator-target-lang-btn"]',
   sourceLangList: '[data-testid="translator-source-lang-list"]',
